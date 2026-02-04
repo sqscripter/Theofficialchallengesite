@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Challenge Program • File Archive</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Montserrat',sans-serif;
+  background:#0c0f14;
+  color:#eee;
+  line-height:1.6;
+}
+
+header{
+  background:#10141b;
+  padding:20px 40px;
+  position:sticky;
+  top:0;
+  box-shadow:0 5px 20px rgba(0,0,0,.6);
+  z-index:1000;
+}
+
+nav{
+  max-width:1300px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-family:'Roboto Mono',monospace;
+  font-size:1.6rem;
+  font-weight:700;
+}
+
+nav a{
+  color:#fff;
+  text-decoration:none;
+  margin-left:25px;
+  font-weight:600;
+}
+
+.hero{
+  padding:90px 20px 60px;
+  text-align:center;
+  background:linear-gradient(135deg,#0d1117,#161b22);
+}
+
+.hero h1{font-size:3rem;margin-bottom:15px}
+.hero p{max-width:700px;margin:auto;color:#bbb}
+
+.controls{
+  max-width:1200px;
+  margin:30px auto 10px;
+  padding:0 20px;
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:15px;
+}
+
+.controls input, .controls select{
+  padding:12px 18px;
+  border-radius:12px;
+  border:none;
+  background:#161b22;
+  color:#fff;
+  font-size:1rem;
+  min-width:180px;
+}
+
+.toggle{
+  padding:12px 22px;
+  border-radius:12px;
+  background:#ff4d4d;
+  border:none;
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.files{
+  max-width:1200px;
+  margin:20px auto 80px;
+  padding:0 20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;
+}
+
+.files.row{grid-template-columns:1fr}
+
+.file{
+  background:#161b22;
+  border-radius:14px;
+  padding:18px;
+  display:flex;
+  align-items:center;
+  gap:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,.5);
+  transition:.3s;
+}
+
+.file:hover{
+  transform:translateY(-6px);
+  box-shadow:0 15px 35px rgba(255,77,77,.35);
+}
+
+.file-icon{font-size:2.1rem; min-width:32px;}
+
+.file-info{flex:1}
+
+.file-info h3{
+  font-size:1.05rem;
+  margin-bottom:4px;
+  word-break:break-word;
+}
+
+.file-info span{
+  color:#aaa;
+  font-size:.85rem;
+}
+
+.file a{
+  background:#ff4d4d;
+  color:white;
+  padding:10px 16px;
+  border-radius:10px;
+  text-decoration:none;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.file a:hover{
+  background:#ff6a6a;
+  transform:scale(1.05);
+}
+
+.file-preview{
+  width:50px;
+  height:50px;
+  border-radius:8px;
+  object-fit:cover;
+}
+
+.error-box{
+  max-width:1200px;
+  margin:10px auto;
+  padding:0 20px;
+}
+
+.error{
+  background:#2b1414;
+  border:1px solid #ff4d4d55;
+  padding:15px;
+  border-radius:12px;
+  color:#ffb4b4;
+  display:none;
+  font-family:'Roboto Mono',monospace;
+}
+
+.loading{
+  text-align:center;
+  opacity:.7;
+  margin:40px 0;
+}
+
+footer{
+  background:#0d1117;
+  padding:40px 20px;
+  text-align:center;
+  color:#777;
+}
+
+@media(max-width:750px){
+  .hero h1{font-size:2.2rem}
+  nav{flex-direction:column;gap:10px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<nav>
+  <div class="logo">Challenge Class</div>
+  <div>
+    <a href="/">Home</a>
+    <a href="/newsletter">Newsletter</a>
+    <a href="/files">Files</a>
+  </div>
+</nav>
+</header>
+
+<section class="hero">
+<h1>File Archive</h1>
+<p>All Challenge Program documents — auto synced from GitHub. Preview, sort, and download files instantly.</p>
+</section>
+
+<section class="controls">
+  <input type="text" id="search" placeholder="Search files...">
+  <select id="sortSelect">
+    <option value="name-asc">Sort: Name ↑</option>
+    <option value="name-desc">Sort: Name ↓</option>
+    <option value="size-asc">Sort: Size ↑</option>
+    <option value="size-desc">Sort: Size ↓</option>
+  </select>
+  <button class="toggle" id="viewToggle">Switch Layout</button>
+</section>
+
+<div class="error-box">
+  <div id="error" class="error"></div>
+</div>
+
+<section class="files" id="fileGrid">
+  <div class="loading">Loading files from GitHub...</div>
+</section>
+
+<footer>
+<p>Powered by GitHub API • Challenge Program</p>
+</footer>
+
+<script>
+const GITHUB_OWNER = "sqscripter";
+const GITHUB_REPO  = "challlengefiles"; // make sure repo spelling matches
+const GITHUB_PATH  = "files";
+
+const grid = document.getElementById("fileGrid");
+const errorBox = document.getElementById("error");
+const search = document.getElementById("search");
+const toggle = document.getElementById("viewToggle");
+const sortSelect = document.getElementById("sortSelect");
+
+let allFiles = [];
+let layout = "grid";
+
+toggle.onclick = () => {
+  layout = layout === "grid" ? "row" : "grid";
+  grid.className = `files ${layout}`;
+};
+
+search.oninput = () => renderFiles();
+sortSelect.onchange = () => renderFiles();
+
+function showError(msg){
+  errorBox.style.display = "block";
+  errorBox.textContent = msg;
+}
+
+async function loadFiles(){
+  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+
+  try{
+    const res = await fetch(url);
+    if(!res.ok){
+      throw new Error(`GitHub API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    if(!Array.isArray(data)){
+      throw new Error("Unexpected GitHub response format");
+    }
+
+    allFiles = data.filter(f => f.type === "file");
+    renderFiles();
+  } catch(err){
+    showError("Failed to load files: " + err.message);
+    console.error(err);
+  }
+}
+
+function renderFiles(){
+  const term = search.value.toLowerCase();
+  const sort = sortSelect.value;
+  grid.innerHTML = "";
+
+  let filtered = allFiles.filter(f =>
+    f.name.toLowerCase().includes(term)
+  );
+
+  // Sorting
+  filtered.sort((a,b)=>{
+    if(sort.startsWith("name")){
+      if(sort.endsWith("asc")) return a.name.localeCompare(b.name);
+      else return b.name.localeCompare(a.name);
+    } else {
+      if(sort.endsWith("asc")) return a.size - b.size;
+      else return b.size - a.size;
+    }
+  });
+
+  if(!filtered.length){
+    grid.innerHTML = '<div class="loading">No matching files.</div>';
+    return;
+  }
+
+  filtered.forEach(file => {
+    const ext = file.name.split(".").pop().toLowerCase();
+    let icon = "📁";
+
+    // Preview image
+    let preview = "";
+    if(ext === "pdf") icon = "📄";
+    else if(ext === "zip") icon = "🗜️";
+    else if(["png","jpg","jpeg","gif","webp"].includes(ext)){
+      preview = `<img class="file-preview" src="${file.download_url}" alt="${file.name}">`;
+      icon = "";
+    }
+
+    const div = document.createElement("div");
+    div.className = "file";
+    div.innerHTML = `
+      ${preview || `<div class="file-icon">${icon}</div>`}
+      <div class="file-info">
+        <h3>${file.name}</h3>
+        <span>${(file.size/1024).toFixed(1)} KB</span>
+      </div>
+      <a href="${file.download_url}" target="_blank">Download</a>
+    `;
+
+    grid.appendChild(div);
+  });
+}
+
+loadFiles();
+</script>
+
+</body>
+</html>
