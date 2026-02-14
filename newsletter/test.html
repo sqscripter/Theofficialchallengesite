@@ -1,289 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Challenge Feed</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet" />
-<style>
-body{margin:0;font-family:"Montserrat",sans-serif;background:#0b0f14;color:#eee;}
-header{background:#1f1f1f;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000;}
-header h1{margin:0;font-size:1.5rem;}
-button{cursor:pointer;border:none;padding:8px 12px;border-radius:8px;font-weight:700;transition:.15s;}
-button:hover{filter:brightness(1.1);}
-.container{display:flex;max-width:1000px;margin:0 auto;padding:20px;gap:20px;}
-.main{flex:2;}
-.rightbar{flex:1;max-width:300px;}
-#postModal, #postDetailModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;z-index:2000;}
-.modalCard{background:#161b22;padding:20px;border-radius:16px;width:95%;max-width:600px;overflow:auto;max-height:90vh;}
-#postModal.show,#postDetailModal.show{display:flex;}
-input,textarea{width:100%;padding:10px;margin:8px 0;border-radius:10px;border:1px solid #222a35;background:#0d1117;color:white;}
-textarea{resize:vertical;min-height:80px;}
-.card{background:#161b22;padding:15px;margin-bottom:16px;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.4);transition:.2s;}
-.card:hover{transform:translateY(-3px);}
-.post-title{font-weight:700;margin-bottom:5px;font-size:1.1rem;}
-.post-name{color:#9aa4af;font-size:.85rem;margin-bottom:8px;}
-.vote{margin-top:8px;padding:5px 10px;border-radius:8px;cursor:pointer;background:#ff4500;color:white;}
-.vote.bump{animation:bump .25s;}
-@keyframes bump{50%{transform:scale(1.25);}}
-.feed-scroll{max-height:70vh;overflow:auto;padding-right:6px;}
-#chatBox{height:400px;overflow:auto;background:#0d1117;padding:10px;border-radius:10px;margin-bottom:10px;font-size:.9rem;}
-#chatInput{width:100%;padding:8px;border-radius:10px;border:1px solid #222a35;background:#0d1117;color:white;}
-#chatBtn{width:100%;background:#3498db;padding:10px;margin-top:5px;border-radius:10px;color:white;font-weight:700;}
-#weeklyFeatured{margin-bottom:20px;}
-.replyBox{margin-left:18px;margin-top:6px;}
-.replyInput{width:calc(100% - 70px);display:inline-block;padding:5px;border-radius:8px;border:1px solid #222a35;background:#0d1117;color:white;}
-.replyBtn{display:inline-block;background:#e74c3c;color:white;padding:5px 10px;border-radius:8px;margin-left:5px;}
-.blur{filter:blur(5px);}
-</style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Challenge Class Newsletter</title>
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Reset */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        line-height: 1.6;
+        background: #121212;
+        color: #eee;
+        transition: background 0.3s, color 0.3s;
+      }
 
-<header>
-<h1>Challenge Feed</h1>
-<button id="openPostBtn">+ Create Post</button>
-</header>
+      /* Header */
+      header {
+        background: #1f1f1f;
+        color: #fff;
+        padding: 20px 40px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      nav .logo {
+        font-size: 1.8rem;
+        font-weight: 700;
+        font-family: "Roboto Mono", monospace;
+      }
+      nav a {
+        color: #fff;
+        text-decoration: none;
+        margin-left: 20px;
+        font-weight: 600;
+        transition: color 0.3s;
+      }
+      nav a:hover {
+        color: #4a90e2;
+      }
 
-<div class="container">
-<div class="main">
-  <!-- Weekly Featured -->
-  <div id="weeklyFeatured"></div>
+      /* Sections */
+      section {
+        padding: 60px 20px;
+      }
 
-  <!-- Post Feed -->
-  <div class="feed-scroll" id="feed"></div>
-</div>
+      .section-title {
+        font-size: 2rem;
+        margin-bottom: 20px;
+        text-align: center;
+      }
 
-<div class="rightbar">
-<h3>💬 Live Chat</h3>
-<div id="chatBox"></div>
-<input id="chatInput" placeholder="Message...">
-<button id="chatBtn">Send</button>
-</div>
-</div>
+      /* This Week Article */
+      .this-week-article {
+        display: flex;
+        flex-direction: column;
+        background: #1f1f1f;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+        margin-bottom: 60px;
+        transition: transform 0.3s, background 0.3s;
+      }
+      .this-week-article img {
+        width: 100%;
+        object-fit: cover;
+        height: 400px;
+      }
+      .this-week-article-content {
+        padding: 30px 20px;
+      }
+      .this-week-article h3 {
+        font-size: 2rem;
+        margin-bottom: 15px;
+      }
+      .this-week-article p {
+        font-size: 1.1rem;
+        color: #ccc;
+        margin-bottom: 20px;
+      }
+      .this-week-article a {
+        display: inline-block;
+        background: #e74c3c;
+        color: #fff;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.3s, transform 0.3s;
+      }
+      .this-week-article a:hover {
+        background: #ff5e57;
+        transform: scale(1.05);
+      }
 
-<!-- CREATE POST MODAL -->
-<div id="postModal">
-  <div class="modalCard">
-    <h3>Create Post</h3>
-    <input id="name" placeholder="Your name">
-    <input id="title" placeholder="Post title">
-    <textarea id="content" placeholder="Write something..."></textarea>
-    <button id="postBtn">Post</button>
+      /* Older Articles Grid */
+      .older-articles {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .older-articles.row-layout {
+        display: flex;
+        flex-direction: column;
+      }
+      .older-article-card {
+        background: #1f1f1f;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+        transition: transform 0.3s, background 0.3s;
+        display: flex;
+        flex-direction: column;
+      }
+      .older-article-card:hover {
+        transform: translateY(-5px);
+        background: #2a2a2a;
+      }
+      .older-article-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+      .older-article-card-content {
+        padding: 20px;
+      }
+      .older-article-card-content h4 {
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+      }
+      .older-article-card-content p {
+        font-size: 0.95rem;
+        color: #ccc;
+        margin-bottom: 15px;
+      }
+      .older-article-card-content a {
+        display: inline-block;
+        background: #e74c3c;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.3s, transform 0.3s;
+      }
+      .older-article-card-content a:hover {
+        background: #ff5e57;
+        transform: scale(1.05);
+      }
+
+      @media(max-width:768px){
+        .this-week-article img{
+          height: 250px;
+        }
+        .this-week-article-content h3{
+          font-size:1.6rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="logo">Challenge Class</div>
+        <div class="nav-links">
+          <a href="https://challengeprograms.org">Home</a>
+          <a href="">Newsletter</a>
+          <a href="#older">Older Articles</a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- This Week's Article -->
+    <section id="thisWeekArticle">
+  <h2 class="section-title">This Week's Article</h2>
+  <div class="this-week-article" id="thisWeekCard">
+    <!-- Content will be injected dynamically -->
   </div>
-</div>
+</section>
 
-<!-- POST DETAIL MODAL -->
-<div id="postDetailModal">
-  <div class="modalCard" id="postDetailContent"></div>
-</div>
+<script>
+  const thisWeekCard = document.getElementById("thisWeekCard");
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-  getFirestore, collection, addDoc, query, orderBy, onSnapshot, startAfter, limit,
-  doc, updateDoc, increment, getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  // Link to this week's article
+  const articleLink = "https://github.com/sqscripter/Theofficialchallengesite/blob/main/newsletter/Weekly%20Newsletter%20of%202_9.pdf?raw=true";
 
-// ===== FIREBASE CONFIG =====
-const firebaseConfig = {
-  apiKey: "AIzaSyA-X3aamm3--C3OvknHs3nYUOcDChuNTC8",
-  authDomain: "challenge-reddit.firebaseapp.com",
-  projectId: "challenge-reddit",
-  storageBucket: "challenge-reddit.firebasestorage.app",
-  messagingSenderId: "366868697602",
-  appId: "1:366868697602:web:08c3ffee581ab893388d1b"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  // Get current day (0=Sun, 1=Mon, ..., 6=Sat)
+  const day = new Date().getDay();
+  const isLive = day === 5 || day === 6 || day === 0; // Fri-Sun
 
-// ===== DOM ELEMENTS =====
-const feed = document.getElementById("feed");
-const weeklyFeatured = document.getElementById("weeklyFeatured");
-const nameInput = document.getElementById("name");
-const titleInput = document.getElementById("title");
-const contentInput = document.getElementById("content");
-const postBtn = document.getElementById("postBtn");
-const postModal = document.getElementById("postModal");
-const openPostBtn = document.getElementById("openPostBtn");
-const postDetailModal = document.getElementById("postDetailModal");
-const postDetailContent = document.getElementById("postDetailContent");
-
-// ===== LIVE CHAT =====
-const chatBox = document.getElementById("chatBox");
-const chatInput = document.getElementById("chatInput");
-const chatBtn = document.getElementById("chatBtn");
-
-// ===== OPEN/CLOSE MODAL =====
-openPostBtn.onclick = ()=>postModal.classList.add("show");
-postModal.onclick = e=>{if(e.target===postModal) postModal.classList.remove("show");};
-postDetailModal.onclick = e=>{if(e.target===postDetailModal) postDetailModal.classList.remove("show");document.body.classList.remove("blur");};
-
-// ===== POST HANDLER =====
-postBtn.onclick = async()=>{
-  const name=nameInput.value.trim();
-  const title=titleInput.value.trim();
-  const content=contentInput.value.trim();
-  if(!name||!title||!content)return alert("Fill everything");
-
-  await addDoc(collection(db,"posts"),{name,title,content,timestamp:Date.now(),upvotes:0});
-  nameInput.value=""; titleInput.value=""; contentInput.value="";
-  postModal.classList.remove("show");
-};
-
-// ===== LOAD WEEKLY FEATURED =====
-const featuredQuery = query(collection(db,"posts"),orderBy("upvotes","desc"),limit(1));
-onSnapshot(featuredQuery,snap=>{
-  weeklyFeatured.innerHTML="";
-  snap.forEach(d=>{
-    const p=d.data();
-    const id=d.id;
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`<b>🔥 Weekly Featured:</b><br><div class="post-title">${p.title}</div><div class="post-name">by ${p.name}</div>`;
-    weeklyFeatured.appendChild(div);
-  });
-});
-
-// ===== POST PAGINATION =====
-let lastVisible=null;
-let loading=false;
-async function loadPosts(initial=false){
-  if(loading) return;
-  loading=true;
-  let q;
-  if(initial||!lastVisible){
-    q=query(collection(db,"posts"),orderBy("timestamp","desc"),limit(20));
-  }else{
-    q=query(collection(db,"posts"),orderBy("timestamp","desc"),startAfter(lastVisible),limit(20));
+  if (isLive) {
+    // Friday-Sunday: show big red button
+    thisWeekCard.innerHTML = `
+      <div style="display:flex;justify-content:center;align-items:center;padding:60px;">
+        <a href="${articleLink}" target="_blank" style="
+          font-size: 1.5rem;
+          padding: 25px 50px;
+          background: #e74c3c;
+          color: #fff;
+          border-radius: 12px;
+          text-decoration: none;
+          font-weight: 700;
+          transition: background 0.3s, transform 0.3s;
+        " 
+          onmouseover="this.style.background='#ff5e57'; this.style.transform='scale(1.05)';" 
+          onmouseout="this.style.background='#e74c3c'; this.style.transform='scale(1)';"
+        >Read This Week's Article</a>
+      </div>
+    `;
+  } else {
+    // Mon-Thu: blurred text with fade-in animation
+    thisWeekCard.innerHTML = `
+      <div class="this-week-article-content" style="text-align:center; padding:60px; opacity:0; animation: fadeIn 1s forwards;">
+        <h3 style="color:#ccc; filter: blur(4px); margin-bottom:20px;">Article Coming Friday</h3>
+        <p style="color:#999; filter: blur(4px); margin-bottom:30px;">
+          Stay tuned! This week's newsletter will be available soon.
+        </p>
+        <a href="javascript:void(0)" style="
+          background: #aaa;
+          color: #555;
+          cursor: not-allowed;
+          padding: 18px 40px;
+          border-radius: 10px;
+          font-weight: 700;
+          text-decoration: none;
+        ">Coming Soon</a>
+      </div>
+    `;
   }
-  const snap = await getDocs(q);
-  if(initial) feed.innerHTML="";
-  snap.forEach(d=>renderPost(d));
-  lastVisible = snap.docs[snap.docs.length-1];
-  loading=false;
-}
-loadPosts(true);
-
-// ===== RENDER POST =====
-function renderPost(docSnap){
-  const p=docSnap.data();
-  const id=docSnap.id;
-  const div=document.createElement("div");
-  div.className="card";
-  div.innerHTML=`
-    <div class="post-title">${p.title}</div>
-    <div class="post-name">by ${p.name}</div>
-    <div>${p.content.substring(0,100)}${p.content.length>100?'...':''}</div>
-    <button class="vote" id="vote_${id}">⬆ ${p.upvotes||0}</button>
-    <button class="expandBtn" id="expand_${id}">View Post</button>
-    <div id="replies_${id}"></div>
-    <div class="replyBox"><input id="replyInput_${id}" class="replyInput" placeholder="Reply..."><button onclick="addReply('${id}',null)" class="replyBtn">Reply</button></div>
-  `;
-  feed.appendChild(div);
-
-  // Upvote live
-  const btn = document.getElementById(`vote_${id}`);
-  btn.onclick = async()=>{await updateDoc(doc(db,"posts",id),{upvotes:increment(1)});};
-  onSnapshot(doc(db,"posts",id),snap=>{btn.textContent=`⬆ ${snap.data().upvotes||0}`;btn.classList.add("bump");setTimeout(()=>btn.classList.remove("bump"),250);});
-
-  listenReplies(id);
-
-  // Expand post
-  document.getElementById(`expand_${id}`).onclick = ()=>{
-    document.body.classList.add("blur");
-    postDetailModal.classList.add("show");
-    showPostDetail(id);
-  };
-}
-
-// ===== REPLIES =====
-window.addReply = async(postId,parentId)=>{
-  const input=document.getElementById(`replyInput_${postId}`);
-  const text=input.value.trim();
-  if(!text) return;
-  await addDoc(collection(db,`posts/${postId}/replies`),{text,timestamp:Date.now(),parentId,parentId?parentId:null});
-  input.value="";
-};
-
-function listenReplies(postId){
-  const q=query(collection(db,`posts/${postId}/replies`),orderBy("timestamp","asc"));
-  onSnapshot(q,snap=>{
-    const box=document.getElementById(`replies_${postId}`);
-    if(!box) return;
-    box.innerHTML="";
-    snap.forEach(r=>{
-      const data=r.data();
-      const rid=r.id;
-      const div=document.createElement("div");
-      div.style.marginLeft=data.parentId? "36px":"0px";
-      div.innerHTML=`↳ ${data.text} <button onclick="addReply('${postId}','${rid}')" class="replyBtn">Reply</button>`;
-      box.appendChild(div);
-    });
-  });
-}
-
-// ===== POST DETAIL MODAL =====
-async function showPostDetail(postId){
-  const docSnap = await getDocs(query(collection(db,"posts"),orderBy("timestamp","desc")));
-  const postDoc = await getDocs(collection(db,"posts"));
-  const p = (await getDocs(collection(db,"posts"))).docs.find(d=>d.id===postId).data();
-  const replies = [];
-  const snap=await getDocs(query(collection(db,`posts/${postId}/replies`),orderBy("timestamp","asc")));
-  snap.forEach(d=>replies.push({...d.data(),id:d.id}));
-
-  postDetailContent.innerHTML=`
-    <div class="post-title">${p.title}</div>
-    <div class="post-name">by ${p.name}</div>
-    <div>${p.content}</div>
-    <h4>Replies</h4>
-    <div id="detailReplies"></div>
-    <input id="detailReplyInput" class="replyInput" placeholder="Reply...">
-    <button id="detailReplyBtn" class="replyBtn">Reply</button>
-  `;
-  const detailReplies=document.getElementById("detailReplies");
-  function renderNestedReplies(parentId=null,level=0){
-    replies.filter(r=>r.parentId===parentId).forEach(r=>{
-      const div=document.createElement("div");
-      div.style.marginLeft=`${level*18}px`;
-      div.innerHTML=`↳ ${r.text} <button onclick="addReply('${postId}','${r.id}')" class="replyBtn">Reply</button>`;
-      detailReplies.appendChild(div);
-      renderNestedReplies(r.id,level+1);
-    });
-  }
-  renderNestedReplies();
-
-  document.getElementById("detailReplyBtn").onclick = async ()=>{
-    const val=document.getElementById("detailReplyInput").value.trim();
-    if(!val) return;
-    await addDoc(collection(db,`posts/${postId}/replies`),{text:val,timestamp:Date.now(),parentId:null});
-    document.getElementById("detailReplyInput").value="";
-  };
-}
-
-// ===== LAZY LOAD ON SCROLL =====
-document.querySelector(".feed-scroll").addEventListener("scroll",()=>{
-  const scrollDiv=document.querySelector(".feed-scroll");
-  if(scrollDiv.scrollTop + scrollDiv.clientHeight >= scrollDiv.scrollHeight-5){
-    loadPosts(false);
-  }
-});
-
-// ===== LIVE CHAT =====
-chatBtn.onclick = async()=>{
-  const msg = chatInput.value.trim();
-  if(!msg) return;
-  await addDoc(collection(db,"chat"),{msg,timestamp:Date.now()});
-  chatInput.value="";
-};
-const chatQuery = query(collection(db,"chat"),orderBy("timestamp","asc"));
-let atBottom = true;
-chatBox.addEventListener("scroll",()=>{atBottom = chatBox.scrollTop+chatBox.clientHeight>=chatBox.scrollHeight-5;});
-onSnapshot(chatQuery,snap=>{
-  chatBox.innerHTML="";
-  snap.forEach(c=>chatBox.innerHTML+=`<div>${c.data().msg}</div>`);
-  if(atBottom) chatBox.scrollTop=chatBox.scrollHeight;
-});
 </script>
 
-</body>
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
+
+
+    <!-- Older Articles -->
+    <section id="older">
+      <h2 class="section-title">Older Articles</h2>
+      <div class="older-articles" id="olderArticlesList">
+        <!-- JS will populate older articles here -->
+      </div>
+    </section>
+
+    <script>
+      // Example older articles
+      const olderArticles = [
+        {
+          title: "Laughing Disease Outbreaks Continue",
+          description: "Published week of 2/9",
+          link: "https://github.com/sqscripter/Theofficialchallengesite/blob/main/newsletter/Weekly%20Newsletter%20of%202_9.pdf?raw=true"
+        },
+            {
+          title: "Kyden Becomes Terrorist?",
+          description: "Published Week of 1/26",
+          link: "https://github.com/sqscripter/challenge-photosfortheweb/blob/main/Newsletter%20Week%20of%201_26%20(1).pdf?raw=true"
+        },         
+        {
+          title: "BREAKING NEW, final words recovered",
+          description: "Published Week of 1/7",
+          link: "https://github.com/sqscripter/challenge-photosfortheweb/blob/main/Newsletter%20Week%20of%201_7.pdf?raw=true"
+        },
+        {
+          title: "Winter Edition 🎅🎄",
+          description: "Published Week of 12/15",
+          link: "https://github.com/sqscripter/challenge-photosfortheweb/blob/main/Newsletter%20Week%20of%2012_15%20(Holiday%20Edition).pdf?raw=true"
+        },
+        {
+          title: "The END of Hugs?",
+          description: "Published week of 12/8",
+          link: "https://github.com/sqscripter/challenge-photosfortheweb/blob/main/Newsletter%20Week%20of%2012_8.pdf?raw=true"
+        },
+        {
+          title: "How We Celebrate Achievements",
+          description: "Published 12/1 week",
+         link: "https://github.com/sqscripter/challenge-photosfortheweb/blob/main/Challenge%20Newsletter%2012_1.pdf?raw=true"
+        }
+      ];
+
+      const olderArticlesList = document.getElementById("olderArticlesList");
+
+      olderArticles.forEach(article => {
+        const div = document.createElement("div");
+        div.className = "older-article-card";
+        div.innerHTML = `
+          <div class="older-article-card-content">
+            <h4>${article.title}</h4>
+            <p>${article.description}</p>
+            <a href="${article.link}" target="_blank">Read Article</a>
+          </div>
+        `;
+        olderArticlesList.appendChild(div);
+      });
+
+      // Optional: toggle between grid and rows
+      // olderArticlesList.classList.add('row-layout'); // uncomment to switch to rows
+    </script>
+  </body>
 </html>
