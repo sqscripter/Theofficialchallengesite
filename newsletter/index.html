@@ -41,6 +41,8 @@ h1{
   border-radius:16px;
   box-shadow:0 8px 25px rgba(0,0,0,.5);
   transition:.2s;
+  display:flex;
+  flex-direction:column;
 }
 #postModal input,#postModal textarea{
   width:100%;
@@ -51,6 +53,7 @@ h1{
   background:#0d1117;
   color:white;
   font-size:1rem;
+  box-sizing:border-box;
   transition:.2s;
 }
 #postModal input:focus,#postModal textarea:focus{
@@ -58,6 +61,7 @@ h1{
   outline:none;
 }
 #postModal button{
+  align-self:flex-start;
   background:#e74c3c;
   border:none;
   padding:12px 18px;
@@ -77,9 +81,14 @@ h1{
   border-radius:18px;
   box-shadow:0 8px 25px rgba(0,0,0,.5);
   transition:.2s;
+  cursor:pointer;
+  overflow:hidden;
 }
 .card:hover{transform:translateY(-4px);}
-
+.card-expanded{
+  max-height:none;
+  cursor:default;
+}
 .post-title{
   font-size:1.2rem;
   font-weight:700;
@@ -103,6 +112,25 @@ h1{
 }
 .vote.bump{animation:bump .25s;}
 @keyframes bump{50%{transform:scale(1.25);}}
+
+/* ===== REPLIES ===== */
+.reply-container{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid #222a35;
+}
+.reply{
+  background:#0d1117;
+  padding:8px 12px;
+  border-radius:12px;
+  margin-bottom:8px;
+}
+.reply-author{
+  font-weight:700;
+  font-size:.85rem;
+  color:#9aa4af;
+  margin-bottom:3px;
+}
 
 /* ===== FEED SCROLL ===== */
 .feed-scroll{
@@ -224,13 +252,19 @@ onSnapshot(postQuery, snapshot => {
     div.innerHTML = `
       <div class="post-title">${p.title}</div>
       <div class="post-name">by ${p.name}</div>
-      <div>${p.content}</div>
+      <div class="post-content-short">${p.content.length>100 ? p.content.substring(0,100)+"..." : p.content}</div>
       <button class="vote" id="vote_${id}">⬆ ${p.upvotes || 0}</button>
+      <div class="reply-container" id="replies_${id}" style="display:none;">
+        <div id="replyList_${id}"></div>
+        <input placeholder="Write a reply..." id="replyInput_${id}" style="width:100%;margin-top:6px;padding:6px;border-radius:8px;border:1px solid #222a35;background:#0d1117;color:white;box-sizing:border-box;">
+        <button id="replyBtn_${id}" style="margin-top:6px;background:#3498db;padding:6px 12px;border-radius:8px;border:none;color:white;cursor:pointer;font-weight:700;">Reply</button>
+      </div>
     `;
     feed.appendChild(div);
 
     const btn = document.getElementById(`vote_${id}`);
-    btn.onclick = async () => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
       await updateDoc(doc(db,"posts",id),{upvotes:increment(1)});
     };
 
@@ -238,6 +272,43 @@ onSnapshot(postQuery, snapshot => {
       const data = snap.data();
       btn.textContent = `⬆ ${data.upvotes || 0}`;
     });
+
+    // EXPAND POST ON CLICK
+    div.onclick = () => {
+      const expanded = div.classList.contains("card-expanded");
+      document.querySelectorAll(".card").forEach(c => c.classList.remove("card-expanded"));
+      document.querySelectorAll(".reply-container").forEach(r=>r.style.display="none");
+      if(!expanded){
+        div.classList.add("card-expanded");
+        document.getElementById(`replies_${id}`).style.display="block";
+        loadReplies(id);
+      }
+    };
+
+    // REPLY HANDLER
+    const replyBtn = document.getElementById(`replyBtn_${id}`);
+    const replyInput = document.getElementById(`replyInput_${id}`);
+    replyBtn.onclick = async (e)=>{
+      e.stopPropagation();
+      const msg = replyInput.value.trim();
+      if(!msg) return;
+      await addDoc(collection(db,"replies_"+id),{msg, author:"Anonymous", timestamp:Date.now()});
+      replyInput.value="";
+    };
+
+    async function loadReplies(postId){
+      const replyList = document.getElementById(`replyList_${postId}`);
+      const repliesQuery = query(collection(db,"replies_"+postId), orderBy("timestamp","asc"));
+      onSnapshot(repliesQuery, snap=>{
+        replyList.innerHTML="";
+        snap.forEach(r=>{
+          const div = document.createElement("div");
+          div.className="reply";
+          div.innerHTML=`<div class="reply-author">${r.data().author}</div>${r.data().msg}`;
+          replyList.appendChild(div);
+        });
+      });
+    }
   });
 });
 
