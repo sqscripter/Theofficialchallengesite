@@ -85,10 +85,6 @@ h1{
   overflow:hidden;
 }
 .card:hover{transform:translateY(-4px);}
-.card-expanded{
-  max-height:none;
-  cursor:default;
-}
 .post-title{
   font-size:1.2rem;
   font-weight:700;
@@ -113,23 +109,60 @@ h1{
 .vote.bump{animation:bump .25s;}
 @keyframes bump{50%{transform:scale(1.25);}}
 
-/* ===== REPLIES ===== */
-.reply-container{
-  margin-top:12px;
-  padding-top:12px;
-  border-top:1px solid #222a35;
-}
-.reply{
+/* ===== REPLY BOX ON MAIN FEED ===== */
+.reply-input{
+  width:100%;
+  margin-top:6px;
+  padding:6px;
+  border-radius:8px;
+  border:1px solid #222a35;
   background:#0d1117;
-  padding:8px 12px;
-  border-radius:12px;
-  margin-bottom:8px;
+  color:white;
+  box-sizing:border-box;
 }
-.reply-author{
+.reply-btn{
+  margin-top:6px;
+  background:#3498db;
+  padding:6px 12px;
+  border-radius:8px;
+  border:none;
+  color:white;
+  cursor:pointer;
   font-weight:700;
-  font-size:.85rem;
-  color:#9aa4af;
-  margin-bottom:3px;
+}
+
+/* ===== FULLSCREEN EXPANDED POST ===== */
+#expandedPost{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#0b0f14;
+  color:#eee;
+  padding:30px;
+  overflow:auto;
+  z-index:9999;
+}
+#expandedPost h2{font-size:2rem;margin-bottom:10px;}
+#expandedPost .author{color:#9aa4af;margin-bottom:20px;}
+#expandedPost .content{font-size:1.1rem;line-height:1.5;margin-bottom:20px;}
+#expandedPost .reply-container{
+  margin-top:20px;
+}
+#expandedPost .reply{background:#0d1117;padding:10px;border-radius:12px;margin-bottom:8px;}
+#expandedPost .reply-author{font-weight:700;color:#9aa4af;margin-bottom:3px;}
+#expandedPost button.closeBtn{
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:#e74c3c;
+  border:none;
+  padding:10px 15px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:700;
 }
 
 /* ===== FEED SCROLL ===== */
@@ -198,6 +231,15 @@ h1{
   </div>
 </div>
 
+<!-- FULLSCREEN POST VIEW -->
+<div id="expandedPost">
+  <button class="closeBtn">Close</button>
+  <h2 id="expTitle"></h2>
+  <div class="author" id="expAuthor"></div>
+  <div class="content" id="expContent"></div>
+  <div class="reply-container" id="expReplies"></div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -222,6 +264,12 @@ const nameInput = document.getElementById("name");
 const titleInput = document.getElementById("title");
 const contentInput = document.getElementById("content");
 const postBtn = document.getElementById("postBtn");
+const expandedPost = document.getElementById("expandedPost");
+const expTitle = document.getElementById("expTitle");
+const expAuthor = document.getElementById("expAuthor");
+const expContent = document.getElementById("expContent");
+const expReplies = document.getElementById("expReplies");
+const closeBtn = document.querySelector(".closeBtn");
 
 // ===== POST HANDLER =====
 postBtn.onclick = async () => {
@@ -253,12 +301,9 @@ onSnapshot(postQuery, snapshot => {
       <div class="post-title">${p.title}</div>
       <div class="post-name">by ${p.name}</div>
       <div class="post-content-short">${p.content.length>100 ? p.content.substring(0,100)+"..." : p.content}</div>
+      <input placeholder="Write a reply..." class="reply-input" id="replyInput_${id}">
+      <button class="reply-btn" id="replyBtn_${id}">Reply</button>
       <button class="vote" id="vote_${id}">⬆ ${p.upvotes || 0}</button>
-      <div class="reply-container" id="replies_${id}" style="display:none;">
-        <div id="replyList_${id}"></div>
-        <input placeholder="Write a reply..." id="replyInput_${id}" style="width:100%;margin-top:6px;padding:6px;border-radius:8px;border:1px solid #222a35;background:#0d1117;color:white;box-sizing:border-box;">
-        <button id="replyBtn_${id}" style="margin-top:6px;background:#3498db;padding:6px 12px;border-radius:8px;border:none;color:white;cursor:pointer;font-weight:700;">Reply</button>
-      </div>
     `;
     feed.appendChild(div);
 
@@ -273,19 +318,7 @@ onSnapshot(postQuery, snapshot => {
       btn.textContent = `⬆ ${data.upvotes || 0}`;
     });
 
-    // EXPAND POST ON CLICK
-    div.onclick = () => {
-      const expanded = div.classList.contains("card-expanded");
-      document.querySelectorAll(".card").forEach(c => c.classList.remove("card-expanded"));
-      document.querySelectorAll(".reply-container").forEach(r=>r.style.display="none");
-      if(!expanded){
-        div.classList.add("card-expanded");
-        document.getElementById(`replies_${id}`).style.display="block";
-        loadReplies(id);
-      }
-    };
-
-    // REPLY HANDLER
+    // REPLY ON MAIN PAGE (hidden)
     const replyBtn = document.getElementById(`replyBtn_${id}`);
     const replyInput = document.getElementById(`replyInput_${id}`);
     replyBtn.onclick = async (e)=>{
@@ -296,21 +329,33 @@ onSnapshot(postQuery, snapshot => {
       replyInput.value="";
     };
 
-    async function loadReplies(postId){
-      const replyList = document.getElementById(`replyList_${postId}`);
-      const repliesQuery = query(collection(db,"replies_"+postId), orderBy("timestamp","asc"));
+    // EXPAND POST TO FULL SCREEN
+    div.onclick = (e)=>{
+      if(e.target.tagName==="INPUT" || e.target.tagName==="BUTTON") return; // ignore clicks on inputs/buttons
+      expTitle.textContent = p.title;
+      expAuthor.textContent = "by "+p.name;
+      expContent.textContent = p.content;
+      expReplies.innerHTML = ""; // clear
+      expandedPost.style.display = "block";
+
+      const repliesQuery = query(collection(db,"replies_"+id), orderBy("timestamp","asc"));
       onSnapshot(repliesQuery, snap=>{
-        replyList.innerHTML="";
+        expReplies.innerHTML="";
         snap.forEach(r=>{
           const div = document.createElement("div");
           div.className="reply";
           div.innerHTML=`<div class="reply-author">${r.data().author}</div>${r.data().msg}`;
-          replyList.appendChild(div);
+          expReplies.appendChild(div);
         });
       });
-    }
+    };
   });
 });
+
+// CLOSE FULLSCREEN
+closeBtn.onclick = ()=>{
+  expandedPost.style.display="none";
+};
 
 // ===== LIVE CHAT =====
 const chatBox = document.getElementById("chatBox");
