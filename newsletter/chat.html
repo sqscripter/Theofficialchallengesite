@@ -305,6 +305,8 @@ onSnapshot(postQuery,snap=>{
     el.innerHTML=`
       <div class="post-title">${p.title}</div>
       <div class="post-meta">Posted by ${p.name}</div>
+      <br>
+        <br>
       <div>${p.content.substring(0,120)}...</div>
       
       <!-- <div id="topReply_${id}" class="top-reply"></div>-->
@@ -377,8 +379,7 @@ function loadRepliesTree(){
       div.style.setProperty("--depth",depth);
       div.innerHTML=`
         <div class="reply-author">${r.author}</div>
-        <br>
-        <br>
+        
         <div>${r.msg}</div>
         <div class="reply-btn">Reply</div>
         <div class="reply-box"></div>
