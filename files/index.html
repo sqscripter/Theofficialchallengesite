@@ -239,7 +239,16 @@ const sortSelect = document.getElementById("sortSelect");
 
 let allFiles = [];
 let layout = "row";
+  
+function changeLayout(){
+  layout = layout === "grid" ? "row" : "grid";
+  grid.className = `files ${layout}`;
 
+
+search.oninput = () => renderFiles();
+sortSelect.onchange = () => renderFiles();
+  }
+  changeLayout()
 toggle.onclick = () => {
   layout = layout === "grid" ? "row" : "grid";
   grid.className = `files ${layout}`;
