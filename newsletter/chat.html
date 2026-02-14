@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* ===== GLOBAL ===== */
 body{
   font-family:"Inter",sans-serif;
   background:#0f141a;
@@ -15,19 +14,18 @@ body{
   margin:0;
 }
 
-/* ===== TOP BAR ===== */
+/* TOP BAR */
 .topbar{
   position:sticky;
   top:0;
   background:#161b22;
   padding:14px 24px;
   font-weight:700;
-  font-size:1.2rem;
   border-bottom:1px solid #2a313c;
   z-index:100;
 }
 
-/* ===== LAYOUT ===== */
+/* LAYOUT */
 .container{
   display:flex;
   max-width:1100px;
@@ -38,7 +36,7 @@ body{
 .main{flex:2;}
 .rightbar{width:300px;}
 
-/* ===== NAME MODAL ===== */
+/* NAME MODAL */
 #nameModal{
   position:fixed;
   inset:0;
@@ -54,9 +52,7 @@ body{
   border-radius:18px;
   width:320px;
   text-align:center;
-  box-shadow:0 30px 80px rgba(0,0,0,.7);
 }
-.name-box h2{margin-top:0;}
 .name-box input{
   width:100%;
   padding:12px;
@@ -75,10 +71,9 @@ body{
   background:#ff4500;
   color:white;
   font-weight:700;
-  cursor:pointer;
 }
 
-/* ===== POST BOX ===== */
+/* POST BOX */
 #postModal{
   background:#161b22;
   padding:18px;
@@ -105,39 +100,32 @@ body{
   cursor:pointer;
 }
 
-/* ===== POST CARD ===== */
+/* POST CARD */
 .card{
-  display:flex;
-  gap:12px;
   background:#161b22;
   padding:14px;
   border-radius:16px;
   margin-bottom:14px;
   cursor:pointer;
-  transition:.15s;
 }
-.card:hover{background:#1d232b;}
-
-.voteCol{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-}
-.voteArrow{
-  cursor:pointer;
-  font-size:18px;
-  user-select:none;
-  color:#8b949e;
-}
-.voteArrow:hover{color:#ff4500;}
-.voteCount{font-weight:700;font-size:.9rem;}
-
-.post-body{flex:1;}
-.post-title{font-weight:700;margin-bottom:4px;}
+.post-title{font-weight:700;}
 .post-meta{font-size:.8rem;color:#8b949e;margin-bottom:6px;}
 
-/* ===== CHAT ===== */
+.top-reply{
+  margin-top:8px;
+  padding:8px;
+  background:#0d1117;
+  border-radius:8px;
+  font-size:.9rem;
+  color:#c9d1d9;
+}
+.view-more{
+  font-size:.8rem;
+  color:#58a6ff;
+  margin-top:4px;
+}
+
+/* CHAT */
 #chatBox{
   height:420px;
   overflow:auto;
@@ -168,7 +156,7 @@ body{
   cursor:pointer;
 }
 
-/* ===== EXPANDED POST ===== */
+/* EXPANDED */
 #expandedPost{
   display:none;
   position:fixed;
@@ -189,13 +177,34 @@ body{
   color:white;
   cursor:pointer;
 }
+
 .reply{
+  margin-left:calc(var(--depth) * 16px);
   background:#161b22;
   padding:10px;
   border-radius:10px;
-  margin-bottom:8px;
+  margin-top:8px;
 }
-.reply-author{font-weight:600;color:#8b949e;}
+.reply-author{
+  font-weight:600;
+  color:#8b949e;
+  font-size:.85rem;
+}
+.reply-btn{
+  font-size:.75rem;
+  color:#58a6ff;
+  cursor:pointer;
+  margin-top:4px;
+}
+.reply-input{
+  width:100%;
+  margin-top:6px;
+  padding:6px;
+  border-radius:8px;
+  border:1px solid #2a313c;
+  background:#0d1117;
+  color:white;
+}
 </style>
 </head>
 <body>
@@ -213,13 +222,11 @@ body{
 
 <div class="container">
   <div class="main">
-
     <div id="postModal">
       <input id="title" placeholder="Post title">
       <textarea id="content" placeholder="What's on your mind?"></textarea>
       <button id="postBtn">Post</button>
     </div>
-
     <div id="feed"></div>
   </div>
 
@@ -231,25 +238,26 @@ body{
   </div>
 </div>
 
+<!-- EXPANDED VIEW -->
 <div id="expandedPost">
   <button class="closeBtn">Close</button>
   <h2 id="expTitle"></h2>
   <div id="expAuthor"></div>
   <div id="expContent"></div>
-  <div id="expReplies"></div>
 
   <input id="expReplyInput" placeholder="Write a reply…">
   <button id="expReplyBtn">Reply</button>
+
+  <div id="expReplies"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, increment, updateDoc, doc, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, increment, updateDoc, doc, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* USERNAME */
-let currentUser = localStorage.getItem("challenge_username");
+let currentUser=localStorage.getItem("challenge_username");
 const modal=document.getElementById("nameModal");
-
 if(!currentUser) modal.style.display="flex";
 else modal.style.display="none";
 
@@ -269,22 +277,24 @@ const app=initializeApp({
 });
 const db=getFirestore(app);
 
-/* POSTS */
-const feed=document.getElementById("feed");
+/* CREATE POST */
 document.getElementById("postBtn").onclick=async()=>{
   const title=document.getElementById("title").value.trim();
   const content=document.getElementById("content").value.trim();
   if(!title||!content) return;
 
   await addDoc(collection(db,"posts"),{
-    name:currentUser,title,content,
-    timestamp:Date.now(),upvotes:0
+    name:currentUser,title,content,timestamp:Date.now(),upvotes:0
   });
 
-  title.value="";content.value="";
+  document.getElementById("title").value="";
+  document.getElementById("content").value="";
 };
 
+/* LOAD POSTS */
+const feed=document.getElementById("feed");
 const postQuery=query(collection(db,"posts"),orderBy("timestamp","desc"),limit(20));
+
 onSnapshot(postQuery,snap=>{
   feed.innerHTML="";
   snap.forEach(d=>{
@@ -293,24 +303,106 @@ onSnapshot(postQuery,snap=>{
     const el=document.createElement("div");
     el.className="card";
     el.innerHTML=`
-      <div class="voteCol">
-        <div class="voteArrow" id="up_${id}">▲</div>
-        <div class="voteCount" id="count_${id}">${p.upvotes||0}</div>
-      </div>
-      <div class="post-body">
-        <div class="post-title">${p.title}</div>
-        <div class="post-meta">Posted by ${p.name}</div>
-        <div>${p.content.substring(0,140)}...</div>
-      </div>
+      <div class="post-title">${p.title}</div>
+      <div class="post-meta">Posted by ${p.name}</div>
+      <div>${p.content.substring(0,120)}...</div>
+      <div id="topReply_${id}" class="top-reply"></div>
+      <div class="view-more">View more replies…</div>
     `;
     feed.appendChild(el);
 
-    document.getElementById(`up_${id}`).onclick=(e)=>{
-      e.stopPropagation();
-      updateDoc(doc(db,"posts",id),{upvotes:increment(1)});
-    };
+    // LOAD TOP REPLY ONLY
+    const topQuery=query(
+      collection(db,"replies_"+id),
+      where("parentId","==",null),
+      orderBy("timestamp","asc"),
+      limit(1)
+    );
+
+    onSnapshot(topQuery,s=>{
+      const box=document.getElementById(`topReply_${id}`);
+      if(s.empty){ box.textContent="No replies yet."; return; }
+      const r=s.docs[0].data();
+      box.innerHTML=`<b>${r.author}</b>: ${r.msg}`;
+    });
+
+    el.onclick=()=>openExpanded(id,p);
   });
 });
+
+/* EXPANDED VIEW */
+let currentPostId=null;
+
+function openExpanded(id,p){
+  currentPostId=id;
+  expandedPost.style.display="block";
+  expTitle.textContent=p.title;
+  expAuthor.textContent="Posted by "+p.name;
+  expContent.textContent=p.content;
+  loadRepliesTree();
+}
+
+document.querySelector(".closeBtn").onclick=()=>{
+  expandedPost.style.display="none";
+};
+
+document.getElementById("expReplyBtn").onclick=async()=>{
+  const msg=document.getElementById("expReplyInput").value.trim();
+  if(!msg) return;
+
+  await addDoc(collection(db,"replies_"+currentPostId),{
+    msg,author:currentUser,parentId:null,timestamp:Date.now()
+  });
+
+  document.getElementById("expReplyInput").value="";
+};
+
+/* THREAD RENDER */
+function loadRepliesTree(){
+  const container=document.getElementById("expReplies");
+  const q=query(collection(db,"replies_"+currentPostId),orderBy("timestamp","asc"));
+
+  onSnapshot(q,snap=>{
+    const all=snap.docs.map(d=>({id:d.id,...d.data()}));
+    container.innerHTML="";
+    renderLevel(all,null,0);
+  });
+
+  function renderLevel(all,parent,depth){
+    all.filter(r=>r.parentId===parent).forEach(r=>{
+      const div=document.createElement("div");
+      div.className="reply";
+      div.style.setProperty("--depth",depth);
+      div.innerHTML=`
+        <div class="reply-author">${r.author}</div>
+        <div>${r.msg}</div>
+        <div class="reply-btn">Reply</div>
+        <div class="reply-box"></div>
+      `;
+      container.appendChild(div);
+
+      const btn=div.querySelector(".reply-btn");
+      const box=div.querySelector(".reply-box");
+
+      btn.onclick=()=>{
+        box.innerHTML=`
+          <input class="reply-input" placeholder="Reply…">
+          <button class="reply-btn">Send</button>
+        `;
+        box.querySelector("button").onclick=async()=>{
+          const msg=box.querySelector("input").value.trim();
+          if(!msg) return;
+          await addDoc(collection(db,"replies_"+currentPostId),{
+            msg,author:currentUser,parentId:r.id,timestamp:Date.now()
+          });
+          box.innerHTML="";
+        };
+      };
+
+      renderLevel(all,r.id,depth+1);
+    });
+  }
+}
 
 /* CHAT */
 const chatBox=document.getElementById("chatBox");
