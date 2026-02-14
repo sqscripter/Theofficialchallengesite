@@ -4,65 +4,67 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Challenge Feed</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* ===== GLOBAL ===== */
 body{
-  font-family:"Montserrat",sans-serif;
-  background:#0b0f14;
-  color:#eee;
+  font-family:"Inter",sans-serif;
+  background:#0f141a;
+  color:#e6edf3;
   margin:0;
-  padding:0;
-}
-h1{
-  text-align:center;
-  padding:30px 0 10px;
-  font-weight:700;
-  font-size:2rem;
 }
 
-/* ===== CONTAINER ===== */
+/* ===== TOP BAR ===== */
+.topbar{
+  position:sticky;
+  top:0;
+  background:#161b22;
+  padding:14px 24px;
+  font-weight:700;
+  font-size:1.2rem;
+  border-bottom:1px solid #2a313c;
+  z-index:100;
+}
+
+/* ===== LAYOUT ===== */
 .container{
   display:flex;
-  max-width:1000px;
-  margin:0 auto;
-  padding:20px;
+  max-width:1100px;
+  margin:20px auto;
   gap:20px;
+  padding:0 16px;
 }
 .main{flex:2;}
-.rightbar{flex:1;max-width:300px;}
+.rightbar{width:300px;}
 
-/* ===== REDDIT NAME MODAL ===== */
+/* ===== NAME MODAL ===== */
 #nameModal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.6);
+  background:rgba(0,0,0,.65);
   display:flex;
   align-items:center;
   justify-content:center;
-  z-index:10000;
+  z-index:9999;
 }
 .name-box{
-  background:#1a1f26;
+  background:#161b22;
   padding:28px;
-  border-radius:16px;
+  border-radius:18px;
   width:320px;
   text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
-  animation:pop .2s ease;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
 }
-@keyframes pop{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
-
-.name-box h2{margin:0 0 8px;}
+.name-box h2{margin-top:0;}
 .name-box input{
   width:100%;
   padding:12px;
-  margin-top:12px;
   border-radius:10px;
   border:1px solid #2a313c;
   background:#0d1117;
   color:white;
+  margin-top:10px;
 }
 .name-box button{
   width:100%;
@@ -76,79 +78,94 @@ h1{
   cursor:pointer;
 }
 
-/* ===== POST MODAL ===== */
+/* ===== POST BOX ===== */
 #postModal{
-  margin-bottom:25px;
   background:#161b22;
-  padding:20px;
+  padding:18px;
   border-radius:16px;
-  box-shadow:0 8px 25px rgba(0,0,0,.5);
-  display:flex;
-  flex-direction:column;
+  margin-bottom:20px;
 }
 #postModal input,#postModal textarea{
   width:100%;
-  margin:10px 0;
   padding:12px;
-  border-radius:12px;
-  border:1px solid #222a35;
+  margin-top:10px;
+  border-radius:10px;
+  border:1px solid #2a313c;
   background:#0d1117;
   color:white;
-  font-size:1rem;
-  box-sizing:border-box;
 }
 #postModal button{
-  align-self:flex-start;
-  background:#ff4500;
-  border:none;
-  padding:12px 18px;
-  border-radius:12px;
-  color:white;
-  font-weight:700;
-  cursor:pointer;
-}
-
-/* ===== POST CARDS ===== */
-.card{
-  background:#161b22;
-  padding:18px;
-  margin-bottom:18px;
-  border-radius:18px;
-  box-shadow:0 8px 25px rgba(0,0,0,.5);
-  cursor:pointer;
-}
-.post-title{font-size:1.2rem;font-weight:700;margin-bottom:6px;}
-.post-name{color:#9aa4af;font-size:.85rem;margin-bottom:10px;}
-
-.vote{
   margin-top:12px;
-  padding:6px 14px;
-  border-radius:10px;
-  cursor:pointer;
   background:#ff4500;
-  color:white;
   border:none;
+  padding:10px 18px;
+  border-radius:10px;
+  color:white;
   font-weight:700;
+  cursor:pointer;
 }
 
-.reply-input{
+/* ===== POST CARD ===== */
+.card{
+  display:flex;
+  gap:12px;
+  background:#161b22;
+  padding:14px;
+  border-radius:16px;
+  margin-bottom:14px;
+  cursor:pointer;
+  transition:.15s;
+}
+.card:hover{background:#1d232b;}
+
+.voteCol{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+.voteArrow{
+  cursor:pointer;
+  font-size:18px;
+  user-select:none;
+  color:#8b949e;
+}
+.voteArrow:hover{color:#ff4500;}
+.voteCount{font-weight:700;font-size:.9rem;}
+
+.post-body{flex:1;}
+.post-title{font-weight:700;margin-bottom:4px;}
+.post-meta{font-size:.8rem;color:#8b949e;margin-bottom:6px;}
+
+/* ===== CHAT ===== */
+#chatBox{
+  height:420px;
+  overflow:auto;
+  background:#161b22;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:10px;
+  font-size:.9rem;
+}
+.chat-user{color:#ffb000;font-weight:600;}
+#chatInput{
   width:100%;
-  margin-top:6px;
-  padding:6px;
-  border-radius:8px;
-  border:1px solid #222a35;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #2a313c;
   background:#0d1117;
   color:white;
 }
-.reply-btn{
+#chatBtn{
+  width:100%;
   margin-top:6px;
-  background:#3498db;
-  padding:6px 12px;
-  border-radius:8px;
+  padding:10px;
   border:none;
+  border-radius:10px;
+  background:#238636;
   color:white;
-  cursor:pointer;
   font-weight:700;
+  cursor:pointer;
 }
 
 /* ===== EXPANDED POST ===== */
@@ -156,16 +173,10 @@ h1{
   display:none;
   position:fixed;
   inset:0;
-  background:#0b0f14;
+  background:#0f141a;
   padding:30px;
   overflow:auto;
-  z-index:9999;
-}
-#expandedPost .reply{
-  background:#0d1117;
-  padding:10px;
-  border-radius:12px;
-  margin-bottom:8px;
+  z-index:9998;
 }
 .closeBtn{
   position:absolute;
@@ -173,71 +184,43 @@ h1{
   right:20px;
   background:#ff4500;
   border:none;
-  padding:10px 15px;
-  border-radius:12px;
+  padding:10px 14px;
+  border-radius:10px;
+  color:white;
   cursor:pointer;
-  font-weight:700;
 }
-
-/* ===== CHAT ===== */
-#chatBox{
-  height:400px;
-  overflow:auto;
-  background:#0d1117;
-  padding:12px;
-  border-radius:12px;
-  margin-bottom:12px;
-  font-size:.9rem;
-}
-.chat-user{
-  color:#ffb000;
-  font-weight:700;
-}
-#chatInput{
-  width:100%;
+.reply{
+  background:#161b22;
   padding:10px;
-  border-radius:12px;
-  border:1px solid #222a35;
-  background:#0d1117;
-  color:white;
+  border-radius:10px;
+  margin-bottom:8px;
 }
-#chatBtn{
-  width:100%;
-  background:#3498db;
-  padding:12px;
-  margin-top:6px;
-  border-radius:12px;
-  border:none;
-  color:white;
-  cursor:pointer;
-  font-weight:700;
-}
+.reply-author{font-weight:600;color:#8b949e;}
 </style>
 </head>
 <body>
 
-<!-- ===== NAME MODAL ===== -->
+<div class="topbar">🔥 Challenge Feed</div>
+
+<!-- NAME MODAL -->
 <div id="nameModal">
   <div class="name-box">
-    <h2>Choose a username</h2>
+    <h2>Pick your username</h2>
     <input id="usernameInput" placeholder="u/yourname">
     <button id="saveUsername">Continue</button>
   </div>
 </div>
 
-<h1>Challenge Feed</h1>
-
 <div class="container">
   <div class="main">
 
-    <!-- POST BOX -->
     <div id="postModal">
       <input id="title" placeholder="Post title">
-      <textarea id="content" placeholder="Write something..."></textarea>
+      <textarea id="content" placeholder="What's on your mind?"></textarea>
       <button id="postBtn">Post</button>
     </div>
 
-    <div class="feed-scroll" id="feed"></div>
+    <div id="feed"></div>
   </div>
 
   <div class="rightbar">
@@ -248,130 +231,103 @@ h1{
   </div>
 </div>
 
-<!-- EXPANDED POST -->
 <div id="expandedPost">
   <button class="closeBtn">Close</button>
   <h2 id="expTitle"></h2>
-  <div class="author" id="expAuthor"></div>
-  <div class="content" id="expContent"></div>
+  <div id="expAuthor"></div>
+  <div id="expContent"></div>
   <div id="expReplies"></div>
+
+  <input id="expReplyInput" placeholder="Write a reply…">
+  <button id="expReplyBtn">Reply</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, increment, updateDoc, doc, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ===== USERNAME SYSTEM ===== */
+/* USERNAME */
 let currentUser = localStorage.getItem("challenge_username");
+const modal=document.getElementById("nameModal");
 
-const nameModal = document.getElementById("nameModal");
-const usernameInput = document.getElementById("usernameInput");
-const saveUsername = document.getElementById("saveUsername");
+if(!currentUser) modal.style.display="flex";
+else modal.style.display="none";
 
-if(!currentUser){
-  nameModal.style.display="flex";
-}else{
-  nameModal.style.display="none";
-}
-
-saveUsername.onclick=()=>{
-  const val=usernameInput.value.trim();
-  if(!val) return;
-  currentUser=val.startsWith("u/")?val:"u/"+val;
+document.getElementById("saveUsername").onclick=()=>{
+  let v=document.getElementById("usernameInput").value.trim();
+  if(!v) return;
+  currentUser=v.startsWith("u/")?v:"u/"+v;
   localStorage.setItem("challenge_username",currentUser);
-  nameModal.style.display="none";
+  modal.style.display="none";
 };
 
-/* ===== FIREBASE ===== */
-const firebaseConfig = {
-  apiKey: "AIzaSyA-X3aamm3--C3OvknHs3nYUOcDChuNTC8",
-  authDomain: "challenge-reddit.firebaseapp.com",
-  projectId: "challenge-reddit",
-  storageBucket: "challenge-reddit.firebasestorage.app",
-  messagingSenderId: "366868697602",
-  appId: "1:366868697602:web:08c3ffee581ab893388d1b"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+/* FIREBASE */
+const app=initializeApp({
+  apiKey:"AIzaSyA-X3aamm3--C3OvknHs3nYUOcDChuNTC8",
+  authDomain:"challenge-reddit.firebaseapp.com",
+  projectId:"challenge-reddit",
+});
+const db=getFirestore(app);
 
-/* ===== POSTS ===== */
+/* POSTS */
 const feed=document.getElementById("feed");
-const titleInput=document.getElementById("title");
-const contentInput=document.getElementById("content");
-const postBtn=document.getElementById("postBtn");
-
-postBtn.onclick=async()=>{
-  if(!currentUser) return;
-  const title=titleInput.value.trim();
-  const content=contentInput.value.trim();
+document.getElementById("postBtn").onclick=async()=>{
+  const title=document.getElementById("title").value.trim();
+  const content=document.getElementById("content").value.trim();
   if(!title||!content) return;
 
   await addDoc(collection(db,"posts"),{
-    name:currentUser,
-    title,
-    content,
-    timestamp:Date.now(),
-    upvotes:0
+    name:currentUser,title,content,
+    timestamp:Date.now(),upvotes:0
   });
 
-  titleInput.value="";
-  contentInput.value="";
+  title.value="";content.value="";
 };
 
-/* ===== LOAD POSTS ===== */
 const postQuery=query(collection(db,"posts"),orderBy("timestamp","desc"),limit(20));
 onSnapshot(postQuery,snap=>{
   feed.innerHTML="";
-  snap.forEach(docSnap=>{
-    const p=docSnap.data();
-    const id=docSnap.id;
+  snap.forEach(d=>{
+    const p=d.data(); const id=d.id;
 
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`
-      <div class="post-title">${p.title}</div>
-      <div class="post-name">Posted by ${p.name}</div>
-      <div>${p.content.substring(0,100)}...</div>
-      <input class="reply-input" id="replyInput_${id}" placeholder="Reply…">
-      <button class="reply-btn" id="replyBtn_${id}">Reply</button>
-      <button class="vote" id="vote_${id}">⬆ ${p.upvotes||0}</button>
+    const el=document.createElement("div");
+    el.className="card";
+    el.innerHTML=`
+      <div class="voteCol">
+        <div class="voteArrow" id="up_${id}">▲</div>
+        <div class="voteCount" id="count_${id}">${p.upvotes||0}</div>
+      </div>
+      <div class="post-body">
+        <div class="post-title">${p.title}</div>
+        <div class="post-meta">Posted by ${p.name}</div>
+        <div>${p.content.substring(0,140)}...</div>
+      </div>
     `;
-    feed.appendChild(div);
+    feed.appendChild(el);
 
-    document.getElementById(`vote_${id}`).onclick=(e)=>{
+    document.getElementById(`up_${id}`).onclick=(e)=>{
       e.stopPropagation();
       updateDoc(doc(db,"posts",id),{upvotes:increment(1)});
-    };
-
-    document.getElementById(`replyBtn_${id}`).onclick=async(e)=>{
-      e.stopPropagation();
-      const msg=document.getElementById(`replyInput_${id}`).value.trim();
-      if(!msg) return;
-      await addDoc(collection(db,"replies_"+id),{
-        msg,
-        author:currentUser,
-        timestamp:Date.now()
-      });
-      document.getElementById(`replyInput_${id}`).value="";
     };
   });
 });
 
-/* ===== CHAT ===== */
+/* CHAT */
 const chatBox=document.getElementById("chatBox");
-const chatInput=document.getElementById("chatInput");
-const chatBtn=document.getElementById("chatBtn");
+document.getElementById("chatBtn").onclick=sendChat;
+document.getElementById("chatInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter") sendChat();
+});
 
-chatBtn.onclick=async()=>{
-  const msg=chatInput.value.trim();
+async function sendChat(){
+  const input=document.getElementById("chatInput");
+  const msg=input.value.trim();
   if(!msg) return;
   await addDoc(collection(db,"chat"),{
-    msg,
-    author:currentUser,
-    timestamp:Date.now()
+    msg,author:currentUser,timestamp:Date.now()
   });
-  chatInput.value="";
-};
+  input.value="";
+}
 
 const chatQuery=query(collection(db,"chat"),orderBy("timestamp","asc"));
 onSnapshot(chatQuery,snap=>{
