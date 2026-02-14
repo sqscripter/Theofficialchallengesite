@@ -90,10 +90,9 @@ nav a{
   margin:20px auto 80px;
   padding:0 20px;
   display:grid;
-  grid-template-columns:1fr;
+  grid-template-columns:1fr; /* ✅ changed from auto-fit grid to row list */
   gap:20px;
 }
-
 
 .files.row{grid-template-columns:1fr}
 
@@ -245,11 +244,11 @@ function changeLayout(){
   layout = layout === "grid" ? "row" : "grid";
   grid.className = `files ${layout}`;
 
-
 search.oninput = () => renderFiles();
 sortSelect.onchange = () => renderFiles();
-  }
-  changeLayout()
+}
+changeLayout()
+
 toggle.onclick = () => {
   layout = layout === "grid" ? "row" : "grid";
   grid.className = `files ${layout}`;
@@ -294,7 +293,6 @@ function renderFiles(){
     f.name.toLowerCase().includes(term)
   );
 
-  // Sorting
   filtered.sort((a,b)=>{
     if(sort.startsWith("name")){
       if(sort.endsWith("asc")) return a.name.localeCompare(b.name);
@@ -314,7 +312,6 @@ function renderFiles(){
     const ext = file.name.split(".").pop().toLowerCase();
     let icon = "📁";
 
-    // Preview image
     let preview = "";
     if(ext === "pdf") icon = "📄";
     else if(ext === "zip") icon = "🗜️";
